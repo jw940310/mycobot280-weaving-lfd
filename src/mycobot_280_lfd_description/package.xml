@@ -17,6 +17,14 @@
   <!-- 메시(.dae)는 업스트림 패키지를 그대로 참조 -->
   <exec_depend>mycobot_description</exec_depend>
 
+  <!-- display.launch.py -->
+  <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>joint_state_publisher</exec_depend>
+  <exec_depend>joint_state_publisher_gui</exec_depend>
+  <exec_depend>rviz2</exec_depend>
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+
   <export>
     <build_type>ament_cmake</build_type>
   </export>

@@ -10,3 +10,7 @@ repositories:
     type: git
     url: https://github.com/ros/xacro.git
     version: da4b3849f8320903d625250089f67f0632be86f2
+  joint_state_publisher:
+    type: git
+    url: https://github.com/ros/joint_state_publisher.git
+    version: 68986c7b1a2ced650213d24a3a6487a472fcd8d1

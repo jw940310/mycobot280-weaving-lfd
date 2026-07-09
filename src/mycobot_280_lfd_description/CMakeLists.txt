@@ -3,7 +3,7 @@ project(mycobot_280_lfd_description)
 
 find_package(ament_cmake REQUIRED)
 
-install(DIRECTORY urdf
+install(DIRECTORY urdf launch rviz
   DESTINATION share/${PROJECT_NAME}
 )
 
