@@ -1,0 +1,253 @@
+<?xml version="1.0"?>
+<!--
+  myCobot 280 M5 — LfD 파이프라인용 패치본
+  원본: mycobot_ros2/mycobot_description/urdf/mycobot_280_m5/mycobot_280_m5.urdf
+
+  업스트림 대비 변경점:
+   1. 모든 revolute 조인트 velocity="0" → 2.0944 rad/s (실기 스펙 120°/s)
+      : velocity=0이면 MoveIt2 시간 파라미터화가 실패함
+   2. 전 링크 <inertial> 추가 (실린더 근사, 총질량 0.84 kg ≈ 실기 0.85 kg)
+      : Gazebo 물리 시뮬레이션에 필수
+   3. 로봇 이름 firefighter → mycobot_280
+   4. fixed 조인트의 무의미한 axis/limit 태그 제거
+  조인트/링크 이름은 업스트림 도구(pymycobot 어댑터 스왑) 호환을 위해 유지.
+-->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="mycobot_280">
+
+  <xacro:property name="mesh_dir"
+      value="package://mycobot_description/urdf/mycobot_280_m5"/>
+
+  <!-- 실기 스펙 관절 최대 속도 120 deg/s -->
+  <xacro:property name="joint_vel" value="2.0944"/>
+  <xacro:property name="joint_effort" value="5.0"/>
+
+  <!-- 실린더 근사 관성. axis = 실린더 축 방향(x|y|z), (cx cy cz) = 질량중심 -->
+  <xacro:macro name="cyl_inertial" params="mass r h axis cx cy cz">
+    <inertial>
+      <origin xyz="${cx} ${cy} ${cz}" rpy="0 0 0"/>
+      <mass value="${mass}"/>
+      <xacro:property name="i_axial" value="${mass*r*r/2}"/>
+      <xacro:property name="i_trans" value="${mass*(3*r*r+h*h)/12}"/>
+      <xacro:if value="${axis == 'x'}">
+        <inertia ixx="${i_axial}" ixy="0" ixz="0"
+                 iyy="${i_trans}" iyz="0" izz="${i_trans}"/>
+      </xacro:if>
+      <xacro:if value="${axis == 'y'}">
+        <inertia ixx="${i_trans}" ixy="0" ixz="0"
+                 iyy="${i_axial}" iyz="0" izz="${i_trans}"/>
+      </xacro:if>
+      <xacro:if value="${axis == 'z'}">
+        <inertia ixx="${i_trans}" ixy="0" ixz="0"
+                 iyy="${i_trans}" iyz="0" izz="${i_axial}"/>
+      </xacro:if>
+    </inertial>
+  </xacro:macro>
+
+  <!-- ================= 링크 ================= -->
+
+  <link name="g_base">
+    <visual>
+      <geometry>
+        <mesh filename="${mesh_dir}/G_base.dae"/>
+      </geometry>
+      <origin xyz="0.0 0 -0.03" rpy="0 0 1.5708"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="${mesh_dir}/G_base.dae"/>
+      </geometry>
+      <origin xyz="0.0 0 -0.03" rpy="0 0 1.5708"/>
+    </collision>
+    <xacro:cyl_inertial mass="0.15" r="0.06" h="0.03" axis="z"
+                        cx="0" cy="0" cz="-0.015"/>
+  </link>
+
+  <link name="joint1">
+    <visual>
+      <geometry>
+        <mesh filename="${mesh_dir}/joint1.dae"/>
+      </geometry>
+      <origin xyz="0.0 0 0" rpy="0 0 -1.5708"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="${mesh_dir}/joint1.dae"/>
+      </geometry>
+      <origin xyz="0.0 0 0" rpy="0 0 -1.5708"/>
+    </collision>
+    <!-- 베이스 기둥: z 0 → 0.13156 (joint2 원점) -->
+    <xacro:cyl_inertial mass="0.15" r="0.035" h="0.13" axis="z"
+                        cx="0" cy="0" cz="0.066"/>
+  </link>
+
+  <link name="joint2">
+    <visual>
+      <geometry>
+        <mesh filename="${mesh_dir}/joint2.dae"/>
+      </geometry>
+      <origin xyz="0.0 0 -0.06096" rpy="0 0 -1.5708"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="${mesh_dir}/joint2.dae"/>
+      </geometry>
+      <origin xyz="0.0 0 -0.06096" rpy="0 0 -1.5708"/>
+    </collision>
+    <!-- 숄더 브래킷: 프레임 원점 주변 모터 하우징 -->
+    <xacro:cyl_inertial mass="0.12" r="0.035" h="0.06" axis="z"
+                        cx="0" cy="0" cz="-0.03"/>
+  </link>
+
+  <link name="joint3">
+    <visual>
+      <geometry>
+        <mesh filename="${mesh_dir}/joint3.dae"/>
+      </geometry>
+      <origin xyz="0.0 0 0.03256" rpy="0 -1.5708 0"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="${mesh_dir}/joint3.dae"/>
+      </geometry>
+      <origin xyz="0.0 0 0.03256" rpy="0 -1.5708 0"/>
+    </collision>
+    <!-- 상완: -x 방향 0.1104 (joint4 원점) -->
+    <xacro:cyl_inertial mass="0.12" r="0.03" h="0.11" axis="x"
+                        cx="-0.055" cy="0" cz="0.03"/>
+  </link>
+
+  <link name="joint4">
+    <visual>
+      <geometry>
+        <mesh filename="${mesh_dir}/joint4.dae"/>
+      </geometry>
+      <origin xyz="0.0 0 0.03056" rpy="0 -1.5708 0"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="${mesh_dir}/joint4.dae"/>
+      </geometry>
+      <origin xyz="0.0 0 0.03056" rpy="0 -1.5708 0"/>
+    </collision>
+    <!-- 전완: -x 0.096, +z 0.06462 (joint5 원점) -->
+    <xacro:cyl_inertial mass="0.10" r="0.03" h="0.10" axis="x"
+                        cx="-0.048" cy="0" cz="0.03"/>
+  </link>
+
+  <link name="joint5">
+    <visual>
+      <geometry>
+        <mesh filename="${mesh_dir}/joint5.dae"/>
+      </geometry>
+      <origin xyz="0.0 0 -0.03356" rpy="-1.5708 0 0"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="${mesh_dir}/joint5.dae"/>
+      </geometry>
+      <origin xyz="0.0 0 -0.03356" rpy="-1.5708 0 0"/>
+    </collision>
+    <!-- 손목 1: -y 방향 0.07318 (joint6 원점) -->
+    <xacro:cyl_inertial mass="0.08" r="0.025" h="0.073" axis="y"
+                        cx="0" cy="-0.037" cz="0"/>
+  </link>
+
+  <link name="joint6">
+    <visual>
+      <geometry>
+        <mesh filename="${mesh_dir}/joint6.dae"/>
+      </geometry>
+      <origin xyz="0 0.00 -0.038" rpy="0 0 0"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="${mesh_dir}/joint6.dae"/>
+      </geometry>
+      <origin xyz="0 0.00 -0.038" rpy="0 0 0"/>
+    </collision>
+    <!-- 손목 2: +y 방향 0.0456 (flange 원점) -->
+    <xacro:cyl_inertial mass="0.07" r="0.025" h="0.045" axis="y"
+                        cx="0" cy="0.023" cz="0"/>
+  </link>
+
+  <link name="joint6_flange">
+    <visual>
+      <geometry>
+        <mesh filename="${mesh_dir}/joint7.dae"/>
+      </geometry>
+      <origin xyz="0.0 0 -0.012" rpy="0 0 0"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="${mesh_dir}/joint7.dae"/>
+      </geometry>
+      <origin xyz="0.0 0 -0.012" rpy="0 0 0"/>
+    </collision>
+    <!-- 엔드 플랜지: 소형 디스크 -->
+    <xacro:cyl_inertial mass="0.05" r="0.02" h="0.01" axis="z"
+                        cx="0" cy="0" cz="-0.01"/>
+  </link>
+
+  <!-- ================= 조인트 ================= -->
+
+  <joint name="g_base_to_joint1" type="fixed">
+    <parent link="g_base"/>
+    <child link="joint1"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <joint name="joint2_to_joint1" type="revolute">
+    <axis xyz="0 0 1"/>
+    <limit effort="${joint_effort}" lower="-2.9321" upper="2.9321"
+           velocity="${joint_vel}"/>
+    <parent link="joint1"/>
+    <child link="joint2"/>
+    <origin xyz="0 0 0.13156" rpy="0 0 0"/>
+  </joint>
+
+  <joint name="joint3_to_joint2" type="revolute">
+    <axis xyz="0 0 1"/>
+    <limit effort="${joint_effort}" lower="-2.4434" upper="2.4434"
+           velocity="${joint_vel}"/>
+    <parent link="joint2"/>
+    <child link="joint3"/>
+    <origin xyz="0 0 0" rpy="0 1.5708 -1.5708"/>
+  </joint>
+
+  <joint name="joint4_to_joint3" type="revolute">
+    <axis xyz="0 0 1"/>
+    <limit effort="${joint_effort}" lower="-2.6179" upper="2.6179"
+           velocity="${joint_vel}"/>
+    <parent link="joint3"/>
+    <child link="joint4"/>
+    <origin xyz="-0.1104 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <joint name="joint5_to_joint4" type="revolute">
+    <axis xyz="0 0 1"/>
+    <limit effort="${joint_effort}" lower="-2.6179" upper="2.6179"
+           velocity="${joint_vel}"/>
+    <parent link="joint4"/>
+    <child link="joint5"/>
+    <origin xyz="-0.096 0 0.06462" rpy="0 0 -1.5708"/>
+  </joint>
+
+  <joint name="joint6_to_joint5" type="revolute">
+    <axis xyz="0 0 1"/>
+    <limit effort="${joint_effort}" lower="-2.7052" upper="2.7925"
+           velocity="${joint_vel}"/>
+    <parent link="joint5"/>
+    <child link="joint6"/>
+    <origin xyz="0 -0.07318 0" rpy="1.5708 -1.5708 0"/>
+  </joint>
+
+  <joint name="joint6output_to_joint6" type="revolute">
+    <axis xyz="0 0 1"/>
+    <limit effort="${joint_effort}" lower="-3.14159" upper="3.14159"
+           velocity="${joint_vel}"/>
+    <parent link="joint6"/>
+    <child link="joint6_flange"/>
+    <origin xyz="0 0.0456 0" rpy="-1.5708 0 0"/>
+  </joint>
+
+</robot>
