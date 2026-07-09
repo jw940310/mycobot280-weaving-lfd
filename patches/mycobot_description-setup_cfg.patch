@@ -1,0 +1,13 @@
+diff --git a/mycobot_description/setup.cfg b/mycobot_description/setup.cfg
+index 7c320d6..0e2e073 100644
+--- a/mycobot_description/setup.cfg
++++ b/mycobot_description/setup.cfg
+@@ -1,6 +1,6 @@
+ 
+ [develop]
+-script-dir=$base/lib/mycobot_description
++script_dir=$base/lib/mycobot_description
+ 
+ [install]
+-install-scripts=$base/lib/mycobot_description
++install_scripts=$base/lib/mycobot_description

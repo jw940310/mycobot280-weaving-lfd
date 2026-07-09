@@ -1,0 +1,12 @@
+# 외부 의존 패키지 목록 (sudo/rosdep 불가 환경이라 소스 빌드)
+# 복원: cd ~/ros2_ws && vcs import src < src/ros2.repos
+# 이후 mycobot_description 패치 적용: git -C src/mycobot_ros2 apply ../../patches/mycobot_description-setup_cfg.patch
+repositories:
+  mycobot_ros2:
+    type: git
+    url: https://github.com/elephantrobotics/mycobot_ros2.git
+    version: 3999e2cda7460d61f4fd2ffaa31049f000eae7a8
+  xacro:
+    type: git
+    url: https://github.com/ros/xacro.git
+    version: da4b3849f8320903d625250089f67f0632be86f2

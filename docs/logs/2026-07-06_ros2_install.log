@@ -1,0 +1,24 @@
+ROS2 Humble 설치 로그
+=====================
+설치일: 2026-07-06
+설치 대상: Ubuntu 22.04.5 LTS (jammy)
+설치 스크립트: scripts/install_ros2_humble.sh (사용자 터미널에서 직접 sudo 실행)
+
+## 설치 결과 확인
+
+- ROS_DISTRO: humble
+- ros-humble-desktop: 0.10.0-1jammy.20260612.213429 (install ok installed)
+- ros-humble-ros2cli: 0.18.18-1jammy.20260605.143144
+- 인식된 패키지 수 (ros2 pkg list): 273개
+- apt policy: ros-humble-desktop 후보/설치 버전 일치, 정상 설치 확인
+
+## 참고
+
+- `ros2 --version`은 이 배포판 CLI에서 지원하지 않는 옵션이라 에러가 나는 것이 정상
+  (버전 확인은 `printenv ROS_DISTRO` 또는 `dpkg -s ros-humble-desktop` 사용)
+- 설치 시 sudo 비밀번호는 사용자 터미널에서 직접 입력 (Claude Code `!` 세션은 TTY
+  미할당으로 sudo 비밀번호 입력 불가)
+
+## 완료 마일스톤
+
+- W1 07.01 항목: Ubuntu 22.04 및 ROS2 Humble 설치, 시스템 점검 → 완료

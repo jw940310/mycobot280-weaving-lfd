@@ -1,0 +1,11 @@
+# colcon 빌드 산출물
+build/
+install/
+log/
+
+# 외부 클론 패키지 (src/ros2.repos 로 복원)
+src/mycobot_ros2/
+src/xacro/
+
+# 세션 로그 등 임시 파일
+/2026-07-06-204904-command-messageinitcommand-message.txt
