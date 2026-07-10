@@ -31,12 +31,23 @@
 
   <virtual_joint name="virtual_joint" type="fixed" parent_frame="world" child_link="g_base"/>
 
+  <!-- collisions_updater 5만 트라이얼 샘플링 결과 (2026-07-10):
+       인접 7쌍 + Never 9쌍 비활성, 나머지 12쌍은 충돌 가능하여 검사 유지 -->
   <disable_collisions link1="g_base" link2="joint1" reason="Adjacent"/>
+  <disable_collisions link1="g_base" link2="joint2" reason="Never"/>
+  <disable_collisions link1="g_base" link2="joint3" reason="Never"/>
+  <disable_collisions link1="g_base" link2="joint4" reason="Never"/>
+  <disable_collisions link1="g_base" link2="joint5" reason="Never"/>
+  <disable_collisions link1="g_base" link2="joint6" reason="Never"/>
+  <disable_collisions link1="g_base" link2="joint6_flange" reason="Never"/>
   <disable_collisions link1="joint1" link2="joint2" reason="Adjacent"/>
   <disable_collisions link1="joint2" link2="joint3" reason="Adjacent"/>
+  <disable_collisions link1="joint2" link2="joint5" reason="Never"/>
   <disable_collisions link1="joint3" link2="joint4" reason="Adjacent"/>
   <disable_collisions link1="joint4" link2="joint5" reason="Adjacent"/>
+  <disable_collisions link1="joint4" link2="joint6" reason="Never"/>
   <disable_collisions link1="joint5" link2="joint6" reason="Adjacent"/>
+  <disable_collisions link1="joint5" link2="joint6_flange" reason="Never"/>
   <disable_collisions link1="joint6" link2="joint6_flange" reason="Adjacent"/>
 
 </robot>
