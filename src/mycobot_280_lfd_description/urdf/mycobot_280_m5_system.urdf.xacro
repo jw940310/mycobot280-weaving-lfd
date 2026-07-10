@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!--
+  myCobot 280 M5 + ros2_control 통합 모델 (fake controller / 실기 공용 진입점).
+
+    xacro mycobot_280_m5_system.urdf.xacro                        # mock hardware
+    xacro ... hardware_plugin:=<플러그인>                          # 어댑터 스왑
+-->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="mycobot_280">
+
+  <xacro:arg name="hardware_plugin" default="mock_components/GenericSystem"/>
+
+  <xacro:include filename="$(find mycobot_280_lfd_description)/urdf/mycobot_280_m5.urdf.xacro"/>
+  <xacro:include filename="$(find mycobot_280_lfd_description)/urdf/mycobot_280_m5.ros2_control.xacro"/>
+
+  <xacro:mycobot_280_ros2_control name="mycobot_280_system"
+                                  plugin="$(arg hardware_plugin)"/>
+
+</robot>

@@ -14,3 +14,49 @@ repositories:
     type: git
     url: https://github.com/ros/joint_state_publisher.git
     version: 68986c7b1a2ced650213d24a3a6487a472fcd8d1
+  # --- ros2_control 스택 (fake controller/W2 Gazebo용, humble 소스 빌드) ---
+  # 시스템 의존: libcap-dev, libexpected-dev, python3-jinja2 (apt)
+  #             typeguard (pip 부재로 wheel 수동 설치 → ~/.local/lib/python3.10/site-packages)
+  # 빌드: colcon build --symlink-install --cmake-args -DBUILD_TESTING=OFF
+  ros2_control:
+    type: git
+    url: https://github.com/ros-controls/ros2_control.git
+    version: 4ffbe4f1b93dbce28c44798d277f1e85fee7ab06
+  ros2_controllers:
+    type: git
+    url: https://github.com/ros-controls/ros2_controllers.git
+    version: ad13c0f1d80383d0ef4386161a8644830ca9381e
+  control_msgs:
+    type: git
+    url: https://github.com/ros-controls/control_msgs.git
+    version: 64ff8832721ec3b51b0dfc294714948f40344260
+  realtime_tools:
+    type: git
+    url: https://github.com/ros-controls/realtime_tools.git
+    version: dcb5604663ca8cb0bf04d86c7fbff34008416d13
+  control_toolbox:
+    type: git
+    url: https://github.com/ros-controls/control_toolbox.git
+    version: 7862168010bfe3f1a5e7c8a2874e04f464594c9b
+  backward_ros:
+    type: git
+    url: https://github.com/pal-robotics/backward_ros.git
+    version: 3c71c9f184223f885459ad67a223eb36a5ca347f
+  # gpl은 humble 브랜치 필수 (0.3.x 태그는 헤더 경로가 달라 control_toolbox와 비호환)
+  generate_parameter_library:
+    type: git
+    url: https://github.com/PickNikRobotics/generate_parameter_library.git
+    version: 4d9fdb45690241487fbd83da3a02ab224e4f5501
+  # cpp_polyfills는 humble 브랜치 필수 (2.x는 deprecation 경고가 rsl 1.1.0의 -Werror에 걸림)
+  cpp_polyfills:
+    type: git
+    url: https://github.com/PickNikRobotics/cpp_polyfills.git
+    version: b919077db0f986c223046b63c866c58c92086181
+  rsl:
+    type: git
+    url: https://github.com/PickNikRobotics/RSL.git
+    version: 7a99badc77db819ed66ec62653729a10f9898be9
+  filters:
+    type: git
+    url: https://github.com/ros/filters.git
+    version: ef8bad440cb65a54874dbaa8bf39b3acc2c03268
