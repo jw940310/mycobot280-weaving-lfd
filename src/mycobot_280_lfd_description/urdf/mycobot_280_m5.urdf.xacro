@@ -19,15 +19,26 @@
 
   <!-- 실기 스펙 관절 최대 속도 120 deg/s -->
   <xacro:property name="joint_vel" value="2.0944"/>
-  <xacro:property name="joint_effort" value="5.0"/>
+
+  <!-- effort_scale: inertia_scale과 같은 배율로 줘야 스케일된 세계에서
+       가속 능력이 실기와 동일해짐. 미적용 시 PID 출력이 5 N·m에 포화되어
+       kd 큰 관절(J1,J2)이 채터링으로 수렴 불능. mock/실기는 기본 1. -->
+  <xacro:arg name="effort_scale" default="1.0"/>
+  <xacro:property name="joint_effort" value="${5.0*$(arg effort_scale)}"/>
+
+  <!-- inertia_scale: Gazebo Classic 안정화용 관성 배율 (기본 1 = 실측 근사).
+       질량은 유지(중력 정확)하고 관성 텐서만 키워 저관성 수치 불안정을 회피.
+       위치 제어 궤적 재생에서 운동학 정확도에는 영향 없음. -->
+  <xacro:arg name="inertia_scale" default="1.0"/>
+  <xacro:property name="inertia_scale" value="$(arg inertia_scale)"/>
 
   <!-- 실린더 근사 관성. axis = 실린더 축 방향(x|y|z), (cx cy cz) = 질량중심 -->
   <xacro:macro name="cyl_inertial" params="mass r h axis cx cy cz">
     <inertial>
       <origin xyz="${cx} ${cy} ${cz}" rpy="0 0 0"/>
       <mass value="${mass}"/>
-      <xacro:property name="i_axial" value="${mass*r*r/2}"/>
-      <xacro:property name="i_trans" value="${mass*(3*r*r+h*h)/12}"/>
+      <xacro:property name="i_axial" value="${inertia_scale*mass*r*r/2}"/>
+      <xacro:property name="i_trans" value="${inertia_scale*mass*(3*r*r+h*h)/12}"/>
       <xacro:if value="${axis == 'x'}">
         <inertia ixx="${i_axial}" ixy="0" ixz="0"
                  iyy="${i_trans}" iyz="0" izz="${i_trans}"/>
@@ -190,6 +201,15 @@
 
   <!-- ================= 조인트 ================= -->
 
+  <!-- damping: 임계감쇠 B=2√(kp·I_eff) 기준, inertia_scale에 비례.
+       ODE가 내재적(implicit)으로 처리해 수치 안정 — PID kd로 감쇠를 걸면
+       속도 노이즈가 토크로 증폭돼 채터링/베이스 흔들림을 유발하므로
+       감쇠는 여기서만 담당하고 PID kd=0으로 둔다. -->
+  <xacro:property name="damp_j12" value="${0.11*inertia_scale}"/>
+  <xacro:property name="damp_j3"  value="${0.042*inertia_scale}"/>
+  <xacro:property name="damp_j45" value="${0.011*inertia_scale}"/>
+  <xacro:property name="damp_j6"  value="${0.0009*inertia_scale}"/>
+
   <joint name="g_base_to_joint1" type="fixed">
     <parent link="g_base"/>
     <child link="joint1"/>
@@ -200,6 +220,7 @@
     <axis xyz="0 0 1"/>
     <limit effort="${joint_effort}" lower="-2.9321" upper="2.9321"
            velocity="${joint_vel}"/>
+    <dynamics damping="${damp_j12}"/>
     <parent link="joint1"/>
     <child link="joint2"/>
     <origin xyz="0 0 0.13156" rpy="0 0 0"/>
@@ -209,6 +230,7 @@
     <axis xyz="0 0 1"/>
     <limit effort="${joint_effort}" lower="-2.4434" upper="2.4434"
            velocity="${joint_vel}"/>
+    <dynamics damping="${damp_j12}"/>
     <parent link="joint2"/>
     <child link="joint3"/>
     <origin xyz="0 0 0" rpy="0 1.5708 -1.5708"/>
@@ -218,6 +240,7 @@
     <axis xyz="0 0 1"/>
     <limit effort="${joint_effort}" lower="-2.6179" upper="2.6179"
            velocity="${joint_vel}"/>
+    <dynamics damping="${damp_j3}"/>
     <parent link="joint3"/>
     <child link="joint4"/>
     <origin xyz="-0.1104 0 0" rpy="0 0 0"/>
@@ -227,6 +250,7 @@
     <axis xyz="0 0 1"/>
     <limit effort="${joint_effort}" lower="-2.6179" upper="2.6179"
            velocity="${joint_vel}"/>
+    <dynamics damping="${damp_j45}"/>
     <parent link="joint4"/>
     <child link="joint5"/>
     <origin xyz="-0.096 0 0.06462" rpy="0 0 -1.5708"/>
@@ -236,6 +260,7 @@
     <axis xyz="0 0 1"/>
     <limit effort="${joint_effort}" lower="-2.7052" upper="2.7925"
            velocity="${joint_vel}"/>
+    <dynamics damping="${damp_j45}"/>
     <parent link="joint5"/>
     <child link="joint6"/>
     <origin xyz="0 -0.07318 0" rpy="1.5708 -1.5708 0"/>
@@ -245,6 +270,7 @@
     <axis xyz="0 0 1"/>
     <limit effort="${joint_effort}" lower="-3.14159" upper="3.14159"
            velocity="${joint_vel}"/>
+    <dynamics damping="${damp_j6}"/>
     <parent link="joint6"/>
     <child link="joint6_flange"/>
     <origin xyz="0 0.0456 0" rpy="-1.5708 0 0"/>

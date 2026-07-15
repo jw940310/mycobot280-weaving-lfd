@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<!--
+  myCobot 280 M5 + Gazebo Classic 통합 모델.
+  - hardware_plugin을 gazebo_ros2_control/GazeboSystem으로 스왑
+  - controller_manager는 gazebo_ros2_control 플러그인 내부에서 실행됨
+  - world 고정 조인트로 베이스를 지면에 고정
+-->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="mycobot_280">
+
+  <xacro:include filename="$(find mycobot_280_lfd_description)/urdf/mycobot_280_m5.urdf.xacro"/>
+  <xacro:include filename="$(find mycobot_280_lfd_description)/urdf/mycobot_280_m5.ros2_control.xacro"/>
+
+  <xacro:mycobot_280_ros2_control name="mycobot_280_system"
+                                  plugin="gazebo_ros2_control/GazeboSystem"
+                                  use_pid="true"/>
+
+  <!-- g_base 충돌 메시는 링크 프레임 아래로 3cm 뻗어 있어(z=-0.03 origin)
+       z=0 고정 시 지면을 관통 → 접촉력 vs 고정조인트 구속 싸움으로 모델
+       전체가 상시 진동. 3.2cm(관통 3cm + 여유 2mm) 올려 접촉을 제거한다. -->
+  <link name="world"/>
+  <joint name="world_to_base" type="fixed">
+    <parent link="world"/>
+    <child link="g_base"/>
+    <origin xyz="0 0 0.032" rpy="0 0 0"/>
+  </joint>
+
+  <!-- ODE 기본(explicit) 감쇠는 τ=-B·v_prev 방식이라 B > 2·I_local/dt면
+       발산 — 자식 링크 국소 관성이 작은 J3~J5는 임계감쇠 B가 한계를 초과.
+       implicit 모드는 감쇠를 구속 솔버에서 풀어 무조건 안정. -->
+  <xacro:macro name="implicit_damper" params="joint">
+    <gazebo reference="${joint}">
+      <implicitSpringDamper>true</implicitSpringDamper>
+    </gazebo>
+  </xacro:macro>
+  <xacro:implicit_damper joint="joint2_to_joint1"/>
+  <xacro:implicit_damper joint="joint3_to_joint2"/>
+  <xacro:implicit_damper joint="joint4_to_joint3"/>
+  <xacro:implicit_damper joint="joint5_to_joint4"/>
+  <xacro:implicit_damper joint="joint6_to_joint5"/>
+  <xacro:implicit_damper joint="joint6output_to_joint6"/>
+
+  <gazebo>
+    <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
+      <parameters>$(find mycobot_280_lfd_description)/config/controllers.yaml</parameters>
+    </plugin>
+  </gazebo>
+
+</robot>

@@ -60,3 +60,7 @@ repositories:
     type: git
     url: https://github.com/ros/filters.git
     version: ef8bad440cb65a54874dbaa8bf39b3acc2c03268
+  gazebo_ros2_control:
+    type: git
+    url: https://github.com/ros-controls/gazebo_ros2_control.git
+    version: 42d875b482f0b254d9032950a91b2c5cbd7d1c3d

@@ -1,7 +1,7 @@
 # fake controller(mock hardware) / 실기 공용 컨트롤러 구성
 controller_manager:
   ros__parameters:
-    update_rate: 100  # Hz
+    update_rate: 1000  # Hz (Gazebo 1kHz 물리 스텝과 일치 — 100Hz면 PID 이산제어 불안정)
 
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster

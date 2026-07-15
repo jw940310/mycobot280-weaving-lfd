@@ -3,18 +3,29 @@
   myCobot 280 ros2_control 하드웨어 정의.
   plugin 인자로 하드웨어 구현을 스왑:
    - 시뮬레이션(현재): mock_components/GenericSystem
-   - Gazebo(W2):       gz_ros2_control/GazeboSimSystem 등
+   - Gazebo(W2):       gazebo_ros2_control/GazeboSystem (use_pid=true 필수)
    - 실기(W7):         pymycobot 기반 자체 hardware_interface
+
+  use_pid: Gazebo 전용. SetPosition(운동학 강제)은 저관성 체인에서
+  결정론적 한계순환(±17°)을 일으켜 힘 기반 PID(SetForce)로 전환한다.
+  kd=0 고정: Gazebo 속도 신호의 고주파 노이즈가 D항에서 토크로 증폭되어
+  채터링(관절 진동 + 베이스 흔들림)을 유발. 감쇠는 URDF <dynamics damping>
+  (ODE implicit 처리, 임계감쇠 기준)이 담당한다. mock/실기는 pos_* 무시.
 -->
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-  <xacro:macro name="mycobot_280_ros2_control" params="name plugin">
+  <xacro:macro name="mycobot_280_ros2_control" params="name plugin use_pid:=false">
     <ros2_control name="${name}" type="system">
       <hardware>
         <plugin>${plugin}</plugin>
       </hardware>
-      <xacro:macro name="arm_joint" params="joint_name">
+      <xacro:macro name="arm_joint" params="joint_name kp kd ki">
         <joint name="${joint_name}">
+          <xacro:if value="${use_pid}">
+            <param name="pos_kp">${kp}</param>
+            <param name="pos_ki">${ki}</param>
+            <param name="pos_kd">${kd}</param>
+          </xacro:if>
           <command_interface name="position"/>
           <state_interface name="position">
             <param name="initial_value">0.0</param>
@@ -22,12 +33,15 @@
           <state_interface name="velocity"/>
         </joint>
       </xacro:macro>
-      <xacro:arm_joint joint_name="joint2_to_joint1"/>
-      <xacro:arm_joint joint_name="joint3_to_joint2"/>
-      <xacro:arm_joint joint_name="joint4_to_joint3"/>
-      <xacro:arm_joint joint_name="joint5_to_joint4"/>
-      <xacro:arm_joint joint_name="joint6_to_joint5"/>
-      <xacro:arm_joint joint_name="joint6output_to_joint6"/>
+      <!-- kp는 inertia_scale=100 적용 후 I_eff 기준 (J1,J2≈1.0, J3≈0.3,
+           J4,J5≈0.04, J6≈1e-3 kg·m²), 목표 ω≈5~20rad/s.
+           ζ≈1은 URDF joint damping이 제공 (kd=0 사유는 상단 주석) -->
+      <xacro:arm_joint joint_name="joint2_to_joint1" kp="30.0" kd="0.0" ki="1.0"/>
+      <xacro:arm_joint joint_name="joint3_to_joint2" kp="30.0" kd="0.0" ki="1.0"/>
+      <xacro:arm_joint joint_name="joint4_to_joint3" kp="15.0" kd="0.0" ki="1.0"/>
+      <xacro:arm_joint joint_name="joint5_to_joint4" kp="8.0" kd="0.0" ki="1.0"/>
+      <xacro:arm_joint joint_name="joint6_to_joint5" kp="8.0" kd="0.0" ki="1.0"/>
+      <xacro:arm_joint joint_name="joint6output_to_joint6" kp="2.0" kd="0.0" ki="0.2"/>
     </ros2_control>
   </xacro:macro>
 

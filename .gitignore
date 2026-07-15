@@ -13,6 +13,7 @@ src/control_msgs/
 src/realtime_tools/
 src/control_toolbox/
 src/backward_ros/
+src/gazebo_ros2_control/
 src/generate_parameter_library/
 src/cpp_polyfills/
 src/rsl/

@@ -30,6 +30,10 @@
   <exec_depend>joint_state_broadcaster</exec_depend>
   <exec_depend>joint_trajectory_controller</exec_depend>
 
+  <!-- gazebo.launch.py -->
+  <exec_depend>gazebo_ros</exec_depend>
+  <exec_depend>gazebo_ros2_control</exec_depend>
+
   <export>
     <build_type>ament_cmake</build_type>
   </export>
