@@ -19,8 +19,14 @@ src/cpp_polyfills/
 src/rsl/
 src/filters/
 
+# LfD trial 데이터 (스키마 정본 샘플은 mycobot_280_lfd_data/samples에 커밋)
+/data/
+
 # 세션 로그 등 임시 파일
 /2026-07-06-204904-command-messageinitcommand-message.txt
 
 # IDE 로컬 설정
 .vscode/
+
+# Python 바이트코드
+__pycache__/
