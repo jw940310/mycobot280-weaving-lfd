@@ -60,6 +60,20 @@ def quat_msg_to_wxyz(q):
     return (w, x, y, z)
 
 
+def rpy_to_quat_wxyz(rpy):
+    """workpiece.rpy 메타데이터 [rad] → (qw,qx,qy,qz).
+
+    URDF/SDF와 동일한 고정축 RPY: R = Rz(yaw)·Ry(pitch)·Rx(roll).
+    """
+    cr, sr = np.cos(rpy[0] / 2), np.sin(rpy[0] / 2)
+    cp, sp = np.cos(rpy[1] / 2), np.sin(rpy[1] / 2)
+    cy, sy = np.cos(rpy[2] / 2), np.sin(rpy[2] / 2)
+    return (cr * cp * cy + sr * sp * sy,
+            sr * cp * cy - cr * sp * sy,
+            cr * sp * cy + sr * cp * sy,
+            cr * cp * sy - sr * sp * cy)
+
+
 def save_csv(traj, path):
     """Trajectory를 스키마 v1 CSV로 저장."""
     meta_yaml = yaml.safe_dump(traj.meta, allow_unicode=True,
