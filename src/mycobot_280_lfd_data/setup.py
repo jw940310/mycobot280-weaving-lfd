@@ -21,6 +21,7 @@ setup(
     entry_points={
         'console_scripts': [
             'validate_trajectory = mycobot_280_lfd_data.schema:main',
+            'generate_trajectories = mycobot_280_lfd_data.synth:main',
         ],
     },
 )
