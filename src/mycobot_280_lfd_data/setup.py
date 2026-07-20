@@ -23,6 +23,7 @@ setup(
             'validate_trajectory = mycobot_280_lfd_data.schema:main',
             'generate_trajectories = mycobot_280_lfd_data.synth:main',
             'trajectory_tf_publisher = mycobot_280_lfd_data.tf_publisher:main',
+            'check_ik = mycobot_280_lfd_data.ik_check:main',
         ],
     },
 )
