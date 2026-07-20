@@ -9,7 +9,9 @@ from ament_index_python.packages import (get_package_prefix,
                                          get_package_share_directory)
 from launch import LaunchDescription
 from launch.actions import (DeclareLaunchArgument, IncludeLaunchDescription,
-                            SetEnvironmentVariable)
+                            RegisterEventHandler, SetEnvironmentVariable)
+from launch.conditions import IfCondition
+from launch.event_handlers import OnProcessExit
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import Command, LaunchConfiguration
 from launch_ros.actions import Node
@@ -38,9 +40,35 @@ def generate_launch_description():
                  ' inertia_scale:=100.0 effort_scale:=100.0']),
         value_type=str)
 
+    spawn_robot = Node(
+        package='gazebo_ros',
+        executable='spawn_entity.py',
+        arguments=['-topic', 'robot_description',
+                   '-entity', 'mycobot_280'],
+        output='screen',
+    )
+
+    # workpiece는 -reference_frame g_base로 스폰하므로 g_base가 Gazebo에
+    # 이미 존재해야 함 → 로봇 spawn_entity 프로세스 종료(스폰 완료) 후 실행.
+    spawn_workpiece = RegisterEventHandler(
+        OnProcessExit(
+            target_action=spawn_robot,
+            on_exit=[
+                IncludeLaunchDescription(
+                    PythonLaunchDescriptionSource(
+                        os.path.join(pkg_share, 'launch',
+                                    'spawn_workpiece.launch.py')),
+                    condition=IfCondition(LaunchConfiguration('workpiece')),
+                ),
+            ],
+        )
+    )
+
     return LaunchDescription([
         DeclareLaunchArgument('gui', default_value='true',
                               description='gzclient(GUI) 실행 여부'),
+        DeclareLaunchArgument('workpiece', default_value='true',
+                              description='가상 Workpiece(작업대/시편) 스폰 여부'),
 
         SetEnvironmentVariable('GAZEBO_MODEL_PATH', gazebo_model_path),
 
@@ -56,13 +84,8 @@ def generate_launch_description():
             parameters=[{'robot_description': robot_description}],
         ),
 
-        Node(
-            package='gazebo_ros',
-            executable='spawn_entity.py',
-            arguments=['-topic', 'robot_description',
-                       '-entity', 'mycobot_280'],
-            output='screen',
-        ),
+        spawn_robot,
+        spawn_workpiece,
 
         # controller_manager는 gazebo 플러그인 내부에서 뜨므로 spawner만 실행
         Node(package='controller_manager', executable='spawner',

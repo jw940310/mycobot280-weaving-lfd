@@ -1,0 +1,73 @@
+<?xml version="1.0"?>
+<!--
+  가상 작업대(bench) + 시편(specimen). 정적 오브젝트(static=true) —
+  물리 충돌은 받되 힘을 받아도 움직이지 않음 (아암 접촉 시 안정성).
+
+  로컬 좌표계(모델 원점 0,0,0) = workpiece 프레임 원점 = 시편 상면의
+  용접선 시작점. 스폰 pose는 반드시 trajectory CSV의
+  workpiece.parent/xyz/rpy 메타데이터(기본: g_base 기준
+  [0.13, -0.06, 0.05], rpy 0)와 일치시킬 것 — spawn_workpiece.launch.py
+  기본값 참고.
+-->
+<sdf version="1.6">
+  <model name="lfd_workpiece">
+    <static>true</static>
+
+    <link name="link">
+
+      <!-- 작업대(bench): 시편을 받치는 지지대.
+           상면 z = 시편 하면(-0.003)에 맞춤. -->
+      <collision name="bench_collision">
+        <pose>0.05 0 -0.023 0 0 0</pose>
+        <geometry>
+          <box><size>0.22 0.16 0.04</size></box>
+        </geometry>
+      </collision>
+      <visual name="bench_visual">
+        <pose>0.05 0 -0.023 0 0 0</pose>
+        <geometry>
+          <box><size>0.22 0.16 0.04</size></box>
+        </geometry>
+        <material>
+          <ambient>0.45 0.32 0.20 1</ambient>
+          <diffuse>0.55 0.40 0.25 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+        </material>
+      </visual>
+
+      <!-- 시편(specimen): 용접선이 그려질 판. 상면 z=0 = workpiece 원점
+           높이. 앞쪽에 1cm 여유를 두고 용접선 시작점(x=0)이 오도록 배치. -->
+      <collision name="specimen_collision">
+        <pose>0.04 0 -0.0015 0 0 0</pose>
+        <geometry>
+          <box><size>0.10 0.06 0.003</size></box>
+        </geometry>
+      </collision>
+      <visual name="specimen_visual">
+        <pose>0.04 0 -0.0015 0 0 0</pose>
+        <geometry>
+          <box><size>0.10 0.06 0.003</size></box>
+        </geometry>
+        <material>
+          <ambient>0.55 0.55 0.58 1</ambient>
+          <diffuse>0.65 0.65 0.68 1</diffuse>
+          <specular>0.3 0.3 0.3 1</specular>
+        </material>
+      </visual>
+
+      <!-- 용접선 마커: x=[0, seam_length=0.04] 시각적 표시(충돌 없음).
+           synth.py 기본 seam length 옵션값과 동일 길이. -->
+      <visual name="seam_marker_visual">
+        <pose>0.02 0 0.00025 0 0 0</pose>
+        <geometry>
+          <box><size>0.04 0.0015 0.0005</size></box>
+        </geometry>
+        <material>
+          <ambient>0.05 0.05 0.05 1</ambient>
+          <diffuse>0.05 0.05 0.05 1</diffuse>
+        </material>
+      </visual>
+
+    </link>
+  </model>
+</sdf>
