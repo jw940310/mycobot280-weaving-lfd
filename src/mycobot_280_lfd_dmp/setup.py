@@ -25,6 +25,7 @@ setup(
         'console_scripts': [
             'check_dmp_env = mycobot_280_lfd_dmp.env_check:main',
             'dmp_reproduce = mycobot_280_lfd_dmp.reproduce_cli:main',
+            'train_dmp = mycobot_280_lfd_dmp.train:main',
         ],
     },
 )

@@ -58,7 +58,11 @@ def reproduce(dmp, start_y=None, goal_y=None, execution_time=None):
     start_y/goal_y는 (7,) w-first 포즈. 일반화 테스트(07.27)의 진입점이다.
     """
     if execution_time is not None:
-        dmp.execution_time = float(execution_time)
+        # 프로퍼티 이름은 execution_time_ (뒤 언더스코어). 언더스코어 없는
+        # dmp.execution_time = ... 는 엉뚱한 인스턴스 속성만 만들고 정준계는
+        # 옛 _execution_time을 계속 써서 재생 시간이 안 바뀐다. setter는 이때
+        # 포싱텀을 재초기화하며 가중치를 보존한다(movement_primitives _dmp.py).
+        dmp.execution_time_ = float(execution_time)
     if start_y is not None or goal_y is not None:
         dmp.configure(
             start_y=None if start_y is None else np.asarray(start_y, float),
