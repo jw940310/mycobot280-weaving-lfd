@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>mycobot_280_lfd_dmp</name>
+  <version>0.1.0</version>
+  <description>
+    LfD 위빙 스킬의 DMP 계층: 스키마 v1 궤적과 movement_primitives
+    CartesianDMP 사이의 연동, 학습/재현/일반화. 설치 절차는
+    scripts/install_python_deps.sh, 배경은 docs/dmp_integration.md.
+  </description>
+  <maintainer email="jw940310@gmail.com">jwkim</maintainer>
+  <license>MIT</license>
+
+  <exec_depend>mycobot_280_lfd_data</exec_depend>
+  <exec_depend>python3-numpy</exec_depend>
+
+  <!--
+    movement_primitives / pytransform3d는 rosdep 키가 없고 이 머신에는 pip도
+    없어서 scripts/install_python_deps.sh로 사용자 site-packages에 직접 푼다.
+    설치 여부는 `ros2 run mycobot_280_lfd_dmp check_dmp_env`로 확인할 것.
+  -->
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

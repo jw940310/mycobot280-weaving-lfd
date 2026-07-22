@@ -4,6 +4,9 @@
 파라미터 지터 + 저주파 대역 노이즈 + 자세 흔들림으로 변주해
 사람 시연 유사 데이터를 만든다. W4 DMP 학습·검증용 입력.
 
+각 trial 앞에는 정지 리드인(아크 스타트 dwell, 기본 0.5초)이 붙는다 —
+시작 속도를 0으로 만들어 DMP 기동 과도응답을 없앤다(--lead-in 0으로 해제).
+
 ros2 run mycobot_280_lfd_data generate_trajectories --shape all --trials 2
 """
 import argparse
@@ -14,7 +17,7 @@ from pathlib import Path
 
 import numpy as np
 
-from .schema import Trajectory, save_csv, validate
+from .schema import Trajectory, save_csv, validate, with_lead_in
 
 # 자세 기준: workpiece X축 180° 회전 → tool Z가 표면(-Z)을 향함 (수직 토치)
 Q_BASE_WXYZ = np.array([0.0, 1.0, 0.0, 0.0])
@@ -124,7 +127,9 @@ def generate_trial(shape, trial_id, cfg, rng):
                       'ori_noise_deg': cfg.ori_noise_deg},
         'created': datetime.now().isoformat(timespec='seconds'),
     }
-    return Trajectory(meta=meta, data=data)
+    # 아크 스타트 dwell: 데모를 정지 상태에서 출발시켜 DMP 기동 과도응답을
+    # 없앤다 (W4에서 확인, docs/dmp_integration.md). meta에 lead_in_s 기록.
+    return with_lead_in(Trajectory(meta=meta, data=data), cfg.lead_in)
 
 
 def next_index(shape_dir, shape):
@@ -154,6 +159,9 @@ def main(argv=None):
                    help='TCP 표면 이격 z [m]')
     p.add_argument('--crescent-bulge', type=float, default=0.5,
                    help='crescent 전진 볼록량 (amplitude 비율)')
+    p.add_argument('--lead-in', type=float, default=0.5,
+                   help='아크 스타트 dwell [s] — 정지 시작으로 DMP 기동 과도 '
+                        '제거. 0이면 비활성화')
     # 시연 다양성
     p.add_argument('--jitter', type=float, default=0.08,
                    help='amplitude/frequency/speed 상대 지터 (±비율)')

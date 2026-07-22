@@ -53,6 +53,10 @@ class TrajectoryTfPublisher(Node):
         self.declare_parameter('workpiece_frame', 'workpiece')
         self.declare_parameter('rate_scale', 1.0)
         self.declare_parameter('loop', True)
+        # 여러 궤적을 겹쳐 볼 때(예: 데모 vs DMP 재현) parent→workpiece는
+        # 하나만 발행해야 한다 — 같은 엣지를 두 노드가 잡으면 static tf
+        # 권한이 충돌해 경고가 뜬다.
+        self.declare_parameter('publish_static', True)
 
         csv_path = self.get_parameter('csv').value
         if not csv_path:
@@ -69,21 +73,23 @@ class TrajectoryTfPublisher(Node):
         meta = self.traj.meta
 
         # parent → workpiece: 메타데이터의 배치. 재생 중 불변이므로 static.
-        self.static_bc = StaticTransformBroadcaster(self)
-        static_tf = TransformStamped()
-        static_tf.header.stamp = self.get_clock().now().to_msg()
-        static_tf.header.frame_id = meta['workpiece']['parent']
-        static_tf.child_frame_id = self.workpiece_frame
-        self.static_bc.sendTransform(_fill_tf(
-            static_tf, meta['workpiece']['xyz'],
-            rpy_to_quat_wxyz(meta['workpiece']['rpy'])))
+        if self.get_parameter('publish_static').value:
+            self.static_bc = StaticTransformBroadcaster(self)
+            static_tf = TransformStamped()
+            static_tf.header.stamp = self.get_clock().now().to_msg()
+            static_tf.header.frame_id = meta['workpiece']['parent']
+            static_tf.child_frame_id = self.workpiece_frame
+            self.static_bc.sendTransform(_fill_tf(
+                static_tf, meta['workpiece']['xyz'],
+                rpy_to_quat_wxyz(meta['workpiece']['rpy'])))
 
         self.bc = TransformBroadcaster(self)
         self.path_pub = self.create_publisher(Path, '~/path', 1)
         self.path_msg = self._build_path()
 
         self.index = 0
-        period = 1.0 / (meta['sample_rate_hz'] * rate_scale)
+        self.period = 1.0 / (meta['sample_rate_hz'] * rate_scale)
+        period = self.period
         self.timer = self.create_timer(period, self.on_timer)
         # Path는 정적 데이터이므로 저주기로만 재발행 (RViz 늦은 구독 대비)
         self.create_timer(1.0, self.publish_path)
@@ -115,12 +121,19 @@ class TrajectoryTfPublisher(Node):
         self.path_pub.publish(self.path_msg)
 
     def on_timer(self):
-        if self.index >= len(self.traj.data):
-            if not self.loop:
-                self.get_logger().info('재생 완료')
-                self.timer.cancel()
-                return
-            self.index = 0
+        n = len(self.traj.data)
+        if self.loop:
+            # 재생 위치를 카운터가 아니라 절대 시각에서 계산한다. 그래야
+            # 같은 궤적을 여러 노드가 동시에 재생할 때(데모 vs DMP 재현)
+            # 시작 시각이 달라도, 타이머가 밀려도 위상이 어긋나지 않는다.
+            # 카운터 방식이면 두 마커가 서로 다른 시점을 가리켜 추종 오차를
+            # 실제보다 크게 보이게 만든다.
+            now = self.get_clock().now().nanoseconds * 1e-9
+            self.index = int(now / self.period) % n
+        elif self.index >= n:
+            self.get_logger().info('재생 완료')
+            self.timer.cancel()
+            return
 
         tf = TransformStamped()
         tf.header.stamp = self.get_clock().now().to_msg()
@@ -128,7 +141,8 @@ class TrajectoryTfPublisher(Node):
         tf.child_frame_id = self.tcp_frame
         self.bc.sendTransform(_fill_tf(tf, self.traj.positions[self.index],
                                        self.traj.quaternions_wxyz[self.index]))
-        self.index += 1
+        if not self.loop:  # loop일 때는 매 틱 시각에서 다시 계산한다
+            self.index += 1
 
 
 def main(args=None):
